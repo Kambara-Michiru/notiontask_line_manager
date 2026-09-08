@@ -1,0 +1,4 @@
+# 全部除外してから、push対象だけ許可する
+**/**
+!appsscript.json
+!src/**/*.gs

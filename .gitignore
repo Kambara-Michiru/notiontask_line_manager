@@ -1,3 +1,5 @@
-.DS_Store
+# clasp（スクリプトIDを含むためコミットしない）
+.clasp.json
+
 node_modules/
-.env
+.DS_Store
