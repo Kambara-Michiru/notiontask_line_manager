@@ -22,7 +22,13 @@ function pushMorning() {
   linePush([textMessage_(text)]);
 }
 
-/** F-2: 夜21時 — 終わった？とクイックリプライ付きで確認 */
+/**
+ * F-2: 夜21時 — 終わった？と確認
+ *
+ * 概要テキスト + 最初の1枚のカードの2通で送る
+ * （1回のpushにまとめれば無料枠の消費は1通分）。
+ * カードを操作すると、確認と次のカードが返ってくる逐次処理型。
+ */
 function pushEvening() {
   var tasks = fetchTodayTasks();
 
@@ -33,9 +39,9 @@ function pushEvening() {
 
   saveLastList_(tasks);
 
-  var text = 'これ、終わった？\n\n' +
-    buildListText_(tasks, false) +
-    '\n\n終わったやつをタップするか、番号を送って。\n（番号+「明日」で明日にまわせるよ）';
-
-  linePush([withQuickReply_(textMessage_(text), tasks)]);
+  linePush([
+    textMessage_('これ、終わった？ 1件ずつ聞くね。\n\n' + buildListText_(tasks, false) +
+      '\n\nカードのボタンで返すか、番号でも操作できるよ（「1 3 5」でまとめて完了、「2 来週」で延期）。'),
+    taskCardMessage_(tasks[0], 0, tasks.length),
+  ]);
 }

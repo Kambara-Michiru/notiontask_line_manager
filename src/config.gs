@@ -30,8 +30,7 @@ var PRIORITY_HIGH = '高';
 
 // ---- 動作パラメータ ----
 var TZ = 'Asia/Tokyo';
-var MAX_TASKS = 12;                       // クイックリプライ13枠（12件+「まだ」）に合わせる
-var DUAL_BUTTON_MAX = 6;                  // この件数以下なら「完了」「明日」の2ボタンを付ける
+var MAX_TASKS = 12;                       // Flexカルーセルの最大バブル数に合わせる
 var LIST_TTL_MS = 6 * 60 * 60 * 1000;     // 番号対応表の有効期間（6時間）
 var TITLE_CLIP = 40;                      // 一覧内タイトルの最大文字数
 var TEXT_LIMIT = 4900;                    // LINEテキスト上限5000に対する安全マージン
@@ -50,12 +49,24 @@ function getSecret_(key) {
       'GASエディタの「プロジェクトの設定 > スクリプト プロパティ」で設定してください。'
     );
   }
-  return v;
+  return v.trim(); // コピペ時の前後空白・改行の混入対策
 }
 
 function notionToken_() { return getSecret_('NOTION_TOKEN'); }
 function lineToken_() { return getSecret_('LINE_CHANNEL_ACCESS_TOKEN'); }
-function lineUserId_() { return getSecret_('LINE_USER_ID'); }
+
+function lineUserId_() {
+  var v = getSecret_('LINE_USER_ID');
+  if (!/^U[0-9a-f]{32}$/i.test(v)) {
+    throw new Error(
+      'LINE_USER_ID の形式が不正（' + v.slice(0, 8) + '…）。' +
+      '「U+32桁の英数字」のユーザーIDが必要。LINE Developersコンソール →' +
+      'チャネル基本設定タブ下部の「あなたのユーザーID」の値を設定して。' +
+      '（@で始まるベーシックIDや、友だち検索用のLINE IDではない）'
+    );
+  }
+  return v;
+}
 
 // ---- 日付ユーティリティ ----
 function todayStr_() {
@@ -63,7 +74,16 @@ function todayStr_() {
 }
 
 function tomorrowStr_() {
-  return Utilities.formatDate(new Date(Date.now() + 24 * 60 * 60 * 1000), TZ, 'yyyy-MM-dd');
+  return dateStrOffset_(1);
+}
+
+function dateStrOffset_(days) {
+  return Utilities.formatDate(new Date(Date.now() + days * 24 * 60 * 60 * 1000), TZ, 'yyyy-MM-dd');
+}
+
+/** 今日の曜日（月=1 … 日=7） */
+function dayOfWeek_() {
+  return Number(Utilities.formatDate(new Date(), TZ, 'u'));
 }
 
 // ---- 文字列ユーティリティ ----

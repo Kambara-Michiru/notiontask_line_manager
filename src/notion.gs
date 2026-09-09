@@ -67,8 +67,13 @@ function markDone(pageId) {
 
 /** 着手日を明日にずらす（statusは next のまま） */
 function snoozeTask(pageId) {
+  snoozeTaskTo(pageId, tomorrowStr_());
+}
+
+/** 着手日を指定日（yyyy-MM-dd）にずらす */
+function snoozeTaskTo(pageId, dateStr) {
   var properties = {};
-  properties[PROP.start] = { date: { start: tomorrowStr_() } };
+  properties[PROP.start] = { date: { start: dateStr } };
   notionFetch_('/pages/' + pageId, 'patch', { properties: properties });
 }
 
@@ -89,7 +94,8 @@ function createInboxTask(title) {
 function plainTitle_(prop) {
   if (!prop || !prop.title) return '(無題)';
   var s = prop.title.map(function (r) { return r.plain_text; }).join('');
-  return s || '(無題)';
+  // タイトル内の改行は一覧の番号対応を崩すのでスペースに潰す
+  return s.replace(/\s+/g, ' ').trim() || '(無題)';
 }
 
 function dateStart_(prop) {
