@@ -37,6 +37,10 @@ var TEXT_LIMIT = 4900;                    // LINEテキスト上限5000に対す
 
 // ---- ScriptProperties のキー ----
 var SP_KEY_LAST_LIST = 'LAST_LIST';
+var SP_KEY_LAST_RUN = 'LAST_RUN';   // 定時ジョブの最終実行記録（診断用）
+
+// 必須のスクリプトプロパティ（diagnose() の点検対象）
+var REQUIRED_SECRETS = ['NOTION_TOKEN', 'LINE_CHANNEL_ACCESS_TOKEN', 'LINE_USER_ID'];
 
 /**
  * スクリプトプロパティから必須値を読む。未設定なら原因が分かるエラーを投げる。
@@ -50,6 +54,12 @@ function getSecret_(key) {
     );
   }
   return v.trim(); // コピペ時の前後空白・改行の混入対策
+}
+
+/** 例外を投げずに読む（診断用）。未設定なら空文字。 */
+function peekSecret_(key) {
+  var v = PropertiesService.getScriptProperties().getProperty(key);
+  return v === null || v === undefined ? '' : v;
 }
 
 function notionToken_() { return getSecret_('NOTION_TOKEN'); }
@@ -93,4 +103,15 @@ function circled_(i) {
 
 function clip_(s, n) {
   return s.length > n ? s.slice(0, n - 1) + '…' : s;
+}
+
+/** 秘密情報をログに出すための伏せ字（先頭4文字だけ残す） */
+function mask_(s) {
+  if (!s) return '(未設定)';
+  return s.slice(0, 4) + '…(' + s.length + '文字)';
+}
+
+/** 日時を読みやすい文字列に */
+function fmtTime_(ms) {
+  return Utilities.formatDate(new Date(ms), TZ, 'yyyy-MM-dd HH:mm');
 }
